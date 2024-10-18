@@ -1,4 +1,9 @@
+import os
+import random
 from collections import deque
+
+# Initalize random seed
+random.seed(os.urandom(16))
 
 
 class SudokuSolver:
@@ -648,14 +653,11 @@ class SudokuSolverCBJ:
         """
         for row in self.grid:
             print(" ".join(str(num) if num != 0 else '.' for num in row))
+        pass
+
+    pass
 
 
 if __name__ == "__main__":
-    problem = None
-    solution = None
-
-    solver_1 = SudokuSolver(problem)
-    solver_2 = SudokuSolverMAC(problem)
-    solver_3 = SudokuSolverCBJ(problem)
 
     pass
