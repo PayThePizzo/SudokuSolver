@@ -1,0 +1,19 @@
+[flake8]
+count = true
+
+ignore =
+    CFQ002,
+    S311,
+    W504,
+    E226,
+    D407
+
+#per-file-ignores =
+max-complexity = 20
+max-function-length = 130
+max-line-length = 130
+show_source = False
+statistics = False
+
+accept-encodings = utf-8
+docstring-convention = numpy
