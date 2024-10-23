@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "Sudoku Solver"
+version = "0.0.1"
+description = "1st Assignment for Foundations of AI (2024/2025), Graduate Course at Ca' Foscari University Venice."
+authors = ["PayThePizzo <872966@stud.unive.it>"]
+readme = "README.md"
+keywords = ["numpy", "constraint propagation", "genetic algorithm", "ai", "poetry"]
+
+
+[tool.poetry.dependencies]
+python = "^3.12"
+poetry = "1.8.4"
+numpy = "^2.1.2"
+mkdocs = "^1.6.1"
+
+
+[tool.poetry.group.test.dependencies]
+psutil = "^6.1.0"
+logging = "^0.4.9.6"
+
+
+[tool.poetry.group.lint.dependencies]
+flake8 = "^7.1.1"
+flake8-docstrings = "^1.7.0"
+flake8-bugbear = "^24.8.19"
+flake8-comprehensions = "^3.15.0"
+flake8-bandit = "^4.1.1"
+flake8-simplify = "^0.21.0"
+flake8-warnings = "^0.4.1"
+flake8-clean-block = "^0.1.2"
+flake8-literal = "^1.4.0"
+flake8-quotes = "^3.4.0"
+flake8-functions-names = "^0.4.0"
+flake8-variables-names = "^0.0.6"
+flake8-functions = "^0.0.8"
+flake8-docstring-checker = "^1.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
