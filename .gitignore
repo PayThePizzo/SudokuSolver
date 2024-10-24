@@ -3,6 +3,6 @@
 *.env
 .vscode/
 .DS_Store
-data/
+sudoku_cluewise.csv
 logs/
 *.ipynb_*

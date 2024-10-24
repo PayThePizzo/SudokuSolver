@@ -3,10 +3,12 @@ count = true
 
 ignore =
     CFQ002,
+    D406,
+    D407,
+    E226,
     S311,
     W504,
-    E226,
-    D407
+
 
 #per-file-ignores =
 max-complexity = 20
