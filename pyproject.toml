@@ -11,6 +11,22 @@ keywords = ["numpy", "constraint propagation", "genetic algorithm", "ai", "poetr
 python = "^3.12"
 poetry = "1.8.4"
 numpy = "^2.1.2"
+
+
+[tool.poetry.group.scientific.dependencies]
+matplotlib = "^3.9.2"
+seaborn = "^0.13.2"
+scipy = "^1.14.1"
+
+
+
+[tool.poetry.group.notebook.dependencies]
+jupyterlab = "^4.2.5"
+notebook = "^7.2.2"
+voila = "^0.5.8"
+
+
+[tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
 
 
