@@ -56,7 +56,7 @@ class SudokuLSGA(GAConfig):
     replacements = 0
     reinitializations = 0
 
-    def __init__(self, grid):
+    def __init__(self, grid: list[list[int]]):
         """Initialize the Sudoku Solver.
 
         This function sets the common structure and values for
@@ -64,7 +64,8 @@ class SudokuLSGA(GAConfig):
         are directly taken from the paper.
 
         Args:
-            grid (_type_): The input puzzle
+            grid (list[list[int]]): An array-like 2D 9x9 list of integers
+            representing the sudoku board puzzle.
         """
         self.N = len(grid)
         # Input Sudoku Problem
@@ -631,7 +632,7 @@ class SudokuLSGA(GAConfig):
 
 
 if __name__ == '__main__':
-    from globals import hard_problem_1, hard_solution_1
+    from examples.generated_examples import hard_problem_1, hard_solution_1
 
     LSGA = SudokuLSGA(hard_problem_1)
     print_sudoku(LSGA.grid)
