@@ -1,10 +1,9 @@
 import numpy as np
 from collections import deque
-from utils import print_sudoku
 
 
 class SudokuSolverMAC:
-    """Sudoku Solver using Maintaining Arc Consistency (MAC) and Backtracking.
+    """Sudoku Solver Class based on Constraint Propagation.
 
     This class implements a solver for 9x9 Sudoku puzzles using constraint
     satisfaction with maintaining arc consistency (MAC) and backtracking.
@@ -46,32 +45,39 @@ class SudokuSolverMAC:
         have an assigned value.
 
         Returns:
-            list of lists: A 9x9 list where each element is a set representing
+            list: A 9x9 list where each element is a set representing
                 the possible values for the corresponding cell.
         """
-        domains = [[set() for _ in range(9)] for _ in range(9)]
+        # 2D Matrix of empty sets for digits 1-9
+        domain_matrix = []
+
         for row in range(9):
+            # Row of the Matrix
+            domain_row = []
+
             for col in range(9):
+                # Domain of single variable
+                domain_cell = None
+
                 if self.grid[row][col] == self.empty_cell:
-                    domains[row][col] = self.full_domain.copy()
+                    # Assign full domain to non-assigned cell
+                    domain_cell = self.full_domain.copy()
                 else:
-                    domains[row][col] = {self.grid[row][col]}
-        return domains
+                    # Limit domain of assigned cell
+                    domain_cell = {self.grid[row][col]}
+                
+                if domain_cell is None:
+                    raise ValueError(
+                        "Domain cannot be None."
+                    )
 
-    def preprocess_domains(self):
-        """Preprocess the domains by performing initial constraint propagation.
+                domain_row.append(domain_cell)
 
-        This method reduces the initial set of possible values for each cell by
-        considering the values already assigned to neighboring cells in the
-        same row, column, and subgrid. It applies the rules of Sudoku to narrow
-        down possibilities.
-        """
-        for row in range(9):
-            for col in range(9):
-                if len(self.domains[row][col]) == 1:
-                    self.update_domains(row, col, list(self.domains[row][col])[0])
+            domain_matrix.append(domain_row)
 
-    def update_domains(self, row, col, num):
+        return domain_matrix
+
+    def update_domains(self, row: int , col: int , num: int):
         """Update the domains of other cells when a number is placed.
 
         This method updates the possible values (domains) of cells in the same
@@ -82,24 +88,48 @@ class SudokuSolverMAC:
             col (int): The column index of the cell where the number is placed.
             num (int): The number placed in the cell.
         """
-        # Update row
-        for c in range(9):
-            if c != col:
-                self.domains[row][c].discard(num)
+        # For each variable in same row or col
+        for idx in range(9):
+            if idx != col:
+                # Restrict domains of same-row var
+                self.domains[row][idx].discard(num)
 
-        # Update column
-        for r in range(9):
-            if r != row:
-                self.domains[r][col].discard(num)
+            if idx != row:
+                # Restrict domains of same-col var
+                self.domains[idx][col].discard(num)
+
+        # Find starting indices
+        start_row = (row // 3) * 3
+        start_col = (col // 3) * 3
 
         # Update 3x3 subgrid
-        start_row, start_col = (row // 3) * 3, (col // 3) * 3
         for r in range(start_row, start_row + 3):
             for c in range(start_col, start_col + 3):
                 if r != row or c != col:
+                    # Restrict domain of same-grid var
                     self.domains[r][c].discard(num)
+    
+        pass 
 
-    def get_neighbors(self, row, col):
+    def preprocess_domains(self):
+        """Preprocess the domains by performing initial constraint propagation.
+
+        This Forward Checking method reduces the initial set of possible values
+        for each cell by considering the values already assigned to neighboring
+        cells in the same row, column, and subgrid.
+        It applies the rules of Sudoku to narrow down possibilities.
+        """
+        # For each variable
+        for row in range(9):
+            for col in range(9):
+                # If variable's domain is restricted to 1 choice
+                if len(self.domains[row][col]) == 1:
+                    # Restrict the domains of variables in same row, col and grid
+                    self.update_domains(row, col, list(self.domains[row][col])[0])
+
+        pass
+
+    def get_neighbors(self, row: int, col: int):
         """Get all neighboring cells (same row, column, or 3x3 subgrid).
 
         This method returns the neighboring cells that share the same row,
@@ -111,21 +141,24 @@ class SudokuSolverMAC:
             col (int): Column index of the cell.
 
         Returns:
-            set: A set of tuples representing the coordinates (row, col) of
-                the neighboring cells.
+            set: A set of tuples representing
+                the coordinates (row, col) of the neighboring cells.
         """
         neighbors = set()
 
-        # Row and column neighbors
-        for c in range(9):
-            if c != col:
-                neighbors.add((row, c))
-        for r in range(9):
-            if r != row:
-                neighbors.add((r, col))
+        # Find row and column neighbors
+        for idx in range(9):
+            if idx != col:
+                neighbors.add((row, idx))
+        
+            if idx != row:
+                neighbors.add((idx, col))
 
-        # Box neighbors
-        start_row, start_col = (row // 3) * 3, (col // 3) * 3
+        # Find starting indices
+        start_row = (row // 3) * 3
+        start_col = (col // 3) * 3
+
+        # Find 3x3 subgrid neighbors
         for r in range(start_row, start_row + 3):
             for c in range(start_col, start_col + 3):
                 if (r, c) != (row, col):
@@ -133,7 +166,7 @@ class SudokuSolverMAC:
 
         return neighbors
 
-    def revise(self, xi, xj):
+    def revise(self, xi: int, xj: int):
         """Revise the domain of cell xi to ensure arc consistency with cell xj.
 
         Arc consistency is ensured by checking if any value in xi's domain is
@@ -151,14 +184,22 @@ class SudokuSolverMAC:
                 otherwise.
         """
         revised = False
+
+        # Find coordinated of Xi and Xj
         xi_row, xi_col = xi
         xj_row, xj_col = xj
+
+        # Find domains of Xi and Xj
         domain_xi = self.domains[xi_row][xi_col]
         domain_xj = self.domains[xj_row][xj_col]
 
+        # If no values of Xj allows to satisfy the constraint 
         if len(domain_xj) == 1:
+            # Retrieve the single constrained value of Xj
             single_value = next(iter(domain_xj))
+            # If present in the domain of Xi
             if single_value in domain_xi:
+                # Remove it
                 domain_xi.discard(single_value)
                 revised = True
 
@@ -175,23 +216,31 @@ class SudokuSolverMAC:
             bool: True if the domains are arc consistent, False if a
                 contradiction is found (i.e., a cell has an empty domain).
         """
+        # Neighbor arcs queue
         queue = deque()
+
         # Initialize the queue with all arcs (each cell and its neighbors)
         for row in range(9):
             for col in range(9):
+                # Find neighbors
                 neighbors = self.get_neighbors(row, col)
+                # For each neighbor add the arc
                 for (nr, nc) in neighbors:
                     queue.append(((row, col), (nr, nc)))
 
+        # Standard AC-3 Procedure
         while queue:
             (xi, xj) = queue.popleft()
-            if self.revise(xi, xj):
-                if len(self.domains[xi[0]][xi[1]]) == 0:
-                    return False  # Contradiction found
 
-                # If xi's domain was revised, add its neighbors back to the queue
+            if self.revise(xi, xj):
+                # Contradiction found
+                if len(self.domains[xi[0]][xi[1]]) == 0:
+                    return False
+
                 for neighbor in self.get_neighbors(*xi):
+                    # If xi's domain was revised
                     if neighbor != xj:
+                        # add its neighbors back to the queue
                         queue.append((neighbor, xi))
 
         return True
@@ -207,50 +256,76 @@ class SudokuSolverMAC:
             tuple: A tuple (row, col) representing the most constrained cell's
                 coordinates, or (None, None) if no empty cells remain.
         """
-        min_possibilities = 10  # More than any possible domain size
+        # Max possibilities
+        min_possibilities = 10  
+        # Cell to consider
         chosen_cell = (None, None)
 
         for row in range(9):
             for col in range(9):
+                # Check if the cell is empty
                 if self.grid[row][col] == self.empty_cell:
+                    # Find its domain
                     possible_values_count = len(self.domains[row][col])
+
                     if 0 < possible_values_count < min_possibilities:
+                        # Update possibilites and cell
                         min_possibilities = possible_values_count
                         chosen_cell = (row, col)
 
         return chosen_cell
 
-    def get_least_constraining_values(self, row, col):
-        """
-        Get a sorted list of values for a cell based on the LCV heuristic.
+    def get_least_constraining_values(self, row: int , col: int):
+        """Get a sorted list of values for a cell based on the LCV heuristic.
 
-        :param row: Row index of the cell.
-        :param col: Column index of the cell.
-        :return: A sorted list of integers (possible values) for the cell.
+        This method implements the Least Constraining Value (LCV) heuristic,
+        which selects values that rule out the fewest possibilities for the
+        neighboring cells. The returned list is sorted based on how
+        constraining the values are.
+
+        Args:
+            row (int): Row index of the cell.
+            col (int): Column index of the cell.
+
+        Returns:
+            list: A sorted list of integers (possible values) for the cell.
         """
+        # Finds count for value
         def count_restrictions(value):
             count = 0
+            # For each neighbor cell
             for neighbor in self.get_neighbors(row, col):
+                # Update domain restriction count
                 if value in self.domains[neighbor[0]][neighbor[1]]:
                     count += 1
+
             return count
 
         return sorted(self.domains[row][col], key=count_restrictions)
 
     def solve(self):
-        """
-        Solve the Sudoku puzzle using MAC and backtracking.
+        """Solve the Sudoku puzzle using MAC and backtracking.
 
-        :return: True if the puzzle is solved, False otherwise.
+        This method applies constraint propagation and backtracking to solve
+        the puzzle. It uses MAC to maintain arc consistency, and employs the
+        MRV and LCV heuristics to guide the search.
+
+        Returns:
+            bool: True if the puzzle is solved, False if no solution exists.
         """
         # Apply initial constraint propagation to narrow down possible values
         self.preprocess_domains()
 
+        # Find the variable with minimum remaining values 
         row, col = self.find_most_constrained_cell()
-        if row is None and col is None:
-            return True
 
+        # Puzzle solved if none found
+        if row is None and col is None:
+            return True 
+
+        # Get the least constrainin
         possible_values = self.get_least_constraining_values(row, col)
+        
         for value in possible_values:
             # Assign the value and make a copy of the current state
             self.grid[row][col] = value
@@ -258,7 +333,10 @@ class SudokuSolverMAC:
 
             # Update the domains and maintain arc consistency
             self.domains[row][col] = {value}
+
+            # Maintain Arc Consistency Procedure
             if self.maintain_arc_consistency():
+                # Keep going down the sol tree
                 if self.solve():
                     return True
 
@@ -268,16 +346,14 @@ class SudokuSolverMAC:
 
         return False
 
-    pass
-
 
 if __name__ == "__main__":
-    solver = SudokuSolverMAC(hard_problem_1)
+    solver = SudokuSolverMAC(hard_problem_3)
     print('Puzzle: \n')
-    print_sudoku(np.array(hard_problem_1))
+    print_sudoku(np.array(hard_problem_3))
     solver.solve()
     print('\n Solution: \n')
     print_sudoku(np.array(solver.grid))
     print('\n Proposed Solution: \n')
-    print_sudoku(np.array(hard_solution_1))
+    print_sudoku(np.array(hard_solution_3))
     pass
