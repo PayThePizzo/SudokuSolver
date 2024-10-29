@@ -6,3 +6,4 @@
 sudoku_cluewise.csv
 logs/
 *.ipynb_*
+*_rand_*
