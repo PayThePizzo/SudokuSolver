@@ -2,10 +2,13 @@
 count = true
 
 ignore =
+    C401,
     CFQ002,
+    CFQ004,
     D406,
     D407,
     E226,
+    E402,
     S311,
     W504,
 
@@ -18,4 +21,4 @@ show_source = False
 statistics = False
 
 accept-encodings = utf-8
-docstring-convention = numpy
+docstring-convention = google
