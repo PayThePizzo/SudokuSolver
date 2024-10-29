@@ -12,6 +12,7 @@ import psutil
 import time
 import pandas as pd
 import numpy as np
+import glob
 from memory_profiler import profile
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -263,16 +264,52 @@ def benchmark_solvers_random_sample(df_path=df_path, sample_size: int = 1, min_c
     pass
 
 
+def join_csv_files_with_prefix(directory, prefix, output_path):
+    """Join multiple CSV files.
+
+    Args:
+        directory (str): Directory containing the CSV files.
+        prefix (str): Prefix string that filenames must start with.
+        output_path (str): Path to save the resulting joined CSV file.
+    """
+    # Get list of CSV files in the directory with the given prefix
+    file_paths = glob.glob(os.path.join(directory, f'{prefix}*.csv'))
+
+    # List to hold each DataFrame
+    dataframes = []
+
+    # Load each matching CSV file into a DataFrame and append it to the list
+    for file_path in file_paths:
+        df = pd.read_csv(file_path)
+        dataframes.append(df)
+
+    # Concatenate all DataFrames into a single DataFrame
+    combined_df = pd.concat(dataframes, ignore_index=True)
+    combined_df.sort_values(by='index', inplace=True)
+    combined_df.reset_index(drop=True, inplace=True)
+    # Save the combined DataFrame to a new CSV file
+    combined_df.to_csv(output_path, index=False)
+
+    pass
+
+
 if __name__ == '__main__':
     # # +++ Samples by Difficulty +++
     # Super-Easy
-    benchmark_solvers_random_sample(sample_size=10, min_clues=61, max_clues=80)
+    benchmark_solvers_random_sample(sample_size=50, min_clues=61, max_clues=80)
     # Easy
-    benchmark_solvers_random_sample(sample_size=10, min_clues=41, max_clues=60)
+    benchmark_solvers_random_sample(sample_size=50, min_clues=41, max_clues=60)
     # Medium
-    benchmark_solvers_random_sample(sample_size=10, min_clues=26, max_clues=40)
+    benchmark_solvers_random_sample(sample_size=50, min_clues=26, max_clues=40)
     # Hard
-    benchmark_solvers_random_sample(sample_size=10, min_clues=21, max_clues=25)
+    benchmark_solvers_random_sample(sample_size=50, min_clues=21, max_clues=25)
     # Expert
-    benchmark_solvers_random_sample(sample_size=10, min_clues=17, max_clues=20)
+    benchmark_solvers_random_sample(sample_size=50, min_clues=17, max_clues=20)
+
+    # # Join result datasets
+    # MAC
+    join_csv_files_with_prefix(resdir, 'csp_rand_', os.path.join(resdir, 'csp_benchmark.csv'))
+    # LSGA
+    join_csv_files_with_prefix(resdir, 'lsga_rand_', os.path.join(resdir, 'lsga_benchmark.csv'))
+
     pass
