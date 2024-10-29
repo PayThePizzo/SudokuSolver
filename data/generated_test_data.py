@@ -1,4 +1,11 @@
-"""Module containing Generated Sudoku Puzzle with Solutions."""
+"""Module containing Generated Test Sudoku Puzzles.
+
+This module purpose is to offer initial
+data to test the sudoku solver algorithms.
+The problems are ranked by level (Easy, Medium,
+Hard, Expert) and for each one of them, 3 puzzles
+have been provided with a solution.
+"""
 
 # Easy Level Sudoku
 
@@ -74,14 +81,6 @@ easy_solution_3 = [
     [8, 6, 4, 7, 2, 3, 9, 5, 1]
 ]
 
-easy_problem_4 = []
-
-easy_solution_4 = []
-
-easy_problem_5 = []
-
-easy_solution_5 = []
-
 # Medium Level Sudoku
 
 medium_problem_1 = [
@@ -155,14 +154,6 @@ medium_solution_3 = [
     [9, 1, 7, 2, 6, 3, 8, 4, 5],
     [8, 3, 5, 4, 9, 1, 2, 7, 6]
 ]
-
-medium_problem_4 = []
-
-medium_solution_4 = []
-
-medium_problem_5 = []
-
-medium_solution_5 = []
 
 # Hard Level Sudoku
 
@@ -238,14 +229,6 @@ hard_solution_3 = [
     [7, 1, 3, 4, 6, 2, 8, 9, 5]
 ]
 
-hard_problem_4 = []
-
-hard_solution_4 = []
-
-hard_problem_5 = []
-
-hard_solution_5 = []
-
 # Expert Level Sudoku
 
 expert_problem_1 = [
@@ -319,11 +302,3 @@ expert_solution_3 = [
     [8, 5, 6, 3, 1, 7, 2, 4, 9],
     [4, 1, 7, 2, 9, 5, 8, 6, 3]
 ]
-
-expert_problem_4 = []
-
-expert_solution_4 = []
-
-expert_problem_5 = []
-
-expert_solution_5 = []
