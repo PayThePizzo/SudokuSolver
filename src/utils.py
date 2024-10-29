@@ -1,7 +1,9 @@
-"""Utils Module."""
+"""Utils module."""
+
+import numpy as np
 
 
-def string_to_sudoku_board(puzzle: str, empty_cell: str) -> list[list[int]]:
+def string_to_sudoku_board(puzzle: str, empty_cell: str = '0') -> list[list[int]]:
     """
     Convert a Sudoku string into a 2D 9x9 list of integers (board).
 
@@ -67,7 +69,7 @@ def string_to_sudoku_board(puzzle: str, empty_cell: str) -> list[list[int]]:
     return board
 
 
-def print_sudoku(board) -> None:
+def print_sudoku_board(puzzle) -> None:
     """Print the Sudoku board in a formatted way.
 
     Args:
@@ -83,8 +85,41 @@ def print_sudoku(board) -> None:
                 ' '.join(
                     str(num)
                     if num != 0 else '.'
-                    for num in board[i, j: j+3]
+                    for num in puzzle[i, j: j+3]
                 ) for j in range(0, 9, 3)
             )
         )
         print(row)
+
+    pass
+
+
+def is_valid_solution(board) -> bool:
+    """
+    Check if a given 9x9 numpy array represents a valid Sudoku solution.
+
+    Args:
+        board (np.array): A 9x9 grid of integers.
+
+    Returns:
+        bool: True if the board is a valid Sudoku solution, False otherwise.
+    """
+    # Check if the shape is 9x9
+    if board.shape != (9, 9):
+        return False
+
+    # Check each row, column, and 3x3 subgrid for validity
+    for i in range(9):
+        # Check if each row and column contain numbers 1 to 9 without repetition
+        if not (np.array_equal(np.sort(board[i, :]), np.arange(1, 10)) and
+                np.array_equal(np.sort(board[:, i]), np.arange(1, 10))):
+            return False
+
+        # Check the 3x3 subgrid
+        row_offset = (i // 3) * 3
+        col_offset = (i % 3) * 3
+        subgrid = board[row_offset:row_offset+3, col_offset:col_offset+3].flatten()
+        if not np.array_equal(np.sort(subgrid), np.arange(1, 10)):
+            return False
+
+    return True

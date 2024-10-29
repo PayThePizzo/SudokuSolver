@@ -1,60 +1,89 @@
-"""
-Implementation Module of the Local Search Genetic Algorithm.
+"""Implementation Module of the Local Search Genetic Algorithm.
 
 This implementation follows the pseudocode from the paper 'A
 Novel Evolutionary Algorithm With Column and Sub-Block Local
 Search for Sudoku Puzzles'.
 """
 
+import sys
 import os
 import random
 import numpy as np
-from logger import log_performance
-from utils import print_sudoku
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from config import GAConfig
 
 # Numpy Random Number Generator
 rng = np.random.default_rng(12345)
 random.seed(os.urandom(42))
 
 
-class GAConfig:
-    """Basic Configuration for Genetic Algorithm Solvers."""
+class SudokuSolverLSGA(GAConfig):
+    """Sudoku Solver LSGA Class using a Local Search Genetic Algorithm (LSGA).
 
-    # Population Size
-    population_size = 150
-    # Elite Poulation Size
-    elite_size = 50
-    # Tournament Size
-    tournament_size = 2
-    # Maximum Generations Count
-    max_generations = 200
-    # PC1 or Individual Crossover Rate
-    individual_crossover_rate = 0.2
-    # PC2 or Row Crossover Rate
-    row_crossover_rate = 0.1
-    # PM1 or Swap Mutation Rate
-    swap_mutation_rate = 0.3
-    # PM2 or Reinitialization Mutation Rate
-    reinitialization_mutation_rate = 0.05
+    This class implements a Local Search Genetic Algorithm (LSGA) to solve
+    Sudoku puzzles. The algorithm maintains a population of candidate
+    solutions and employs evolutionary strategies such as selection,
+    crossover, mutation, and local search to evolve the solutions over
+    generations.
 
-    pass
+    Key Features:
+        - **Population-Based Search**: Utilizes a population of Sudoku grids, allowing the
+            algorithm to explore multiple potential solutions simultaneously.
+        - **Initialization**: The population is initialized based on the provided
+            Sudoku grid, preserving given numbers and ensuring unique values in each
+            row.
+        - **Fitness Evaluation**: Fitness is assessed based on the number of illegal
+            columns and sub-blocks, encouraging valid Sudoku solutions.
+        - **Tournament Selection**: Implements tournament selection to choose parent
+            individuals for the next generation, promoting higher fitness solutions.
+        - **Crossover and Mutation**: Combines genetic operators to create new
+            individuals, ensuring that given numbers remain unchanged while
+            introducing diversity.
+        - **Local Search**: Includes column and sub-block local search strategies to
+            resolve repeated numbers, improving solution quality.
+        - **Elite Population Strategy**: Maintains an elite population to keep the best
+            individuals and uses elite learning to enhance genetic diversity.
+        - **Adaptability**: Configurable parameters allow for tuning the algorithm's
+            behavior, including mutation rates and crossover probabilities.
 
-
-class SudokuLSGA(GAConfig):
-    """Sudoku LSGA Class."""
-
-    # TODO: Statistics
-    # Crossover
-    row_swaps = 0
-    # Mutation
-    cell_swaps = 0
-    row_reinitializations = 0
-    # Column Local Search
-    col_swaps = 0
-    # Subblock Local Search
-    sub_swaps = 0
-    replacements = 0
-    reinitializations = 0
+    Attributes:
+        log_dir (str): Path for storing log files related to the GA execution.
+        solved (bool): A flag to track whether the algorithm successfully
+            solved the puzzle.
+        population_size (int): Total number of individuals in the population.
+        elite_size (int): Number of individuals retained for the next generation.
+        tournament_size (int): Number of individuals selected for tournament
+            selection in each iteration.
+        max_generations (int): Maximum number of generations allowed during
+            the evolutionary process.
+        individual_crossover_rate (float): Probability of crossover occurring
+            for individual solutions (PC1).
+        row_crossover_rate (float): Probability of crossover occurring for each
+            row (PC2).
+        swap_mutation_rate (float): Probability of mutation through cell
+            swapping (PM1).
+        reinitialization_mutation_rate (float): Probability of reinitializing
+            rows during mutation (PM2).
+        row_swaps (int): Count of row crossover swaps between parents.
+        cell_swaps (int): Count of in-row cell swaps during mutation.
+        row_reinitializations (int): Count of rows that have been
+            reinitialized during mutation.
+        col_swaps (int): Count of cell swaps between columns of the same row
+            due to column local search.
+        sub_swaps (int): Count of cell swaps between subblocks of the same row
+            due to subblock local search.
+        replacements (int): Count of the worst individuals replaced in the
+            population.
+        reinitializations (int): Count of the worst individuals reinitialized.
+        generations (int): Current generation count during the evolutionary
+            process.
+        N (int): The size of the Sudoku grid (typically 9 for a standard Sudoku).
+        grid (np.ndarray): A 9x9 numpy array representing the initial Sudoku grid.
+        associated_matrix (np.ndarray): A binary matrix indicating which cells in the grid are pre-filled.
+        logger (logging.Logger): Logger for tracking the execution and debugging.
+    """
 
     def __init__(self, grid: list[list[int]]):
         """Initialize the Sudoku Solver.
@@ -67,12 +96,18 @@ class SudokuLSGA(GAConfig):
             grid (list[list[int]]): An array-like 2D 9x9 list of integers
             representing the sudoku board puzzle.
         """
+        # Grid length
         self.N = len(grid)
         # Input Sudoku Problem
         self.grid = np.array(grid)
         # Shared Associated Matrix
-        # Tracks if numbers were intentionally assigned
         self.associated_matrix = (self.grid > 0).astype(int)
+
+        # Logger Setup
+        self.logger = self.setup_logging(
+            os.path.join(self.log_dir, 'LSGA_execution.log')
+        )
+        self.logger.info('Instance of SudokuSolverLSGA Initialized.')
         pass
 
     def initialize_row(self, matrix, row):
@@ -249,6 +284,8 @@ class SudokuLSGA(GAConfig):
                             np.copy(offspring2[i, :]),
                             np.copy(offspring1[i, :])
                         )
+                        # Update row swaps
+                        self.row_swaps += 1
             # Save the offspring
             new_population.append((offspring1, f1))
             if offspring2 is not None:
@@ -290,6 +327,8 @@ class SudokuLSGA(GAConfig):
                         offspring[i, j2].copy(),
                         offspring[i, j1].copy()
                     )
+                    # Update cell swaps
+                    self.cell_swaps += 1
 
                 # rand2 < PM2
                 if rng.random() < self.reinitialization_mutation_rate:
@@ -297,6 +336,8 @@ class SudokuLSGA(GAConfig):
                     offspring[i, :] = self.initialize_row(
                         np.copy(self.grid), i
                     )
+                    # Update cell reinitializations
+                    self.row_reinitializations += 1
 
             # Append the mutated individual
             new_population.append((offspring, fit))
@@ -379,6 +420,8 @@ class SudokuLSGA(GAConfig):
                             offspring[i, j2].copy(),
                             offspring[i, j1].copy()
                         )
+                        # Update col swaps
+                        self.col_swaps += 1
                         break
 
             new_population.append((offspring, fit))
@@ -507,9 +550,10 @@ class SudokuLSGA(GAConfig):
                                 offspring[i2, j2].copy(),
                                 offspring[i1, j1].copy()
                             )
-
                             # Swap made
                             swapped = True
+                            # Update subblock swaps
+                            self.sub_swaps += 1
                             # Exit
                             break
 
@@ -560,6 +604,8 @@ class SudokuLSGA(GAConfig):
                 new_population[
                     new_population.index((x_worst, fitness_worst))
                 ] = (x_random, fitness_random)
+                # Update replacements
+                self.replacements += 1
             else:
                 # Reinitialize x_worst with a new random individual
                 x_init = self.create_individual()
@@ -567,20 +613,27 @@ class SudokuLSGA(GAConfig):
                 new_population[
                     new_population.index((x_worst, fitness_worst))
                 ] = ((x_init, fitness_init))
+                # Update replacements
+                self.reinitializations += 1
 
         return new_population
 
-    @log_performance
-    def evolve(self):
+    def solve(self):
         """Return a solution for the sudoku puzzle."""
         # Track Generations
         count = 0
         # Track Best Individual and Its Fitness
         best_individual = None
 
+        # Track solving
+        self.solved = False
+
         # 1. First Initialization of Population
+        self.logger.debug('Initialize Population for the first time.')
         self.population = self.initialize_population()
+
         # 2. First Evaluation of Population
+        self.logger.debug('Evaluate Population for the first time.')
         self.population = self.evaluate_population(self.population)
 
         # Use a copy
@@ -591,54 +644,109 @@ class SudokuLSGA(GAConfig):
 
         # 3. While block
         while count < self.max_generations:
+            self.logger.debug(f'Starting Generation {count}')
 
             # 4. Tournament Selection
+            self.logger.debug('Starting Tournament Selection')
             population = self.tournament_selection(population)
+            self.logger.debug('End of Tournament Selection')
 
             # 5. Crossover
+            self.logger.debug('Starting Crossover')
             population = self.crossover(population)
+            self.logger.debug('End of Crossover')
 
             # 6. Mutation
+            self.logger.debug('Starting Mutation')
             population = self.mutate(population)
+            self.logger.debug('End of Mutation')
 
             # 7. Column Local Search
+            self.logger.debug('Starting Column Local Search')
             population = self.column_local_search(population)
+            self.logger.debug('End of Column Local Search')
 
             # 8. Sub-Block Local Search
+            self.logger.debug('Starting Sub-block Local Search')
             population = self.subblock_local_search(population)
+            self.logger.debug('End of Sub-block Local Search')
 
             # 9. Evaluate Population
+            self.logger.debug('Starting Generation Evaluation')
             population = self.evaluate_population(population)
+            self.logger.debug('End of Generation Evaluation')
 
             # Update Elite Individuals
+            self.logger.debug('Starting Elite Population Update')
             elite = self.update_elite_population(population, elite)
+            self.logger.debug('End of Elite Population Update')
 
             # 10. Elite Population Learning
+            self.logger.debug('Starting Elite Population Learning')
             population = self.elite_population_learning(population, elite)
+            self.logger.debug('End of Elite Population Learning')
 
             # 11. Reserve the best individual as g_best
             best_individual = min(elite, key=lambda x: x[1])
+            self.logger.debug(f'Best Individual has Fitness {best_individual[1]}')
 
             # 12. Check if fitness of solution is optimal
             if best_individual[1] == 0:
+                self.logger.info('Solution Found')
+                self.logger.debug(f'Solution required {count} generations')
+                self.solved = True
                 break
 
             count += 1
 
+        # Update generations used
+        self.generations = count
         # Obtain best solution and its fitness
         return best_individual
 
-    pass
+    def get_statistics(self):
+        """Return a dictionary of statistics.
 
+        The statistics returned are:
+            - `generations`, tracks the
+                count of generations used;
+            - `row_swaps`, counts how many
+                times two parents swapped rows
+            - `cell_swaps`, counts how many
+                times an individual has a row
+                mutation (swap of cell in a row)
+            - `row_reinitializations`, counts how
+                many times an individual' row is
+                reinitialized during mutation
+            - `col_swaps`, counts the swaps of values
+                (in the same row) between columns
+            - `sub_swaps`, counts the swaps of values
+                (in the same row) between subblocks
+            - `replacements`, tracks the replacements
+                of the worst individuals with best ones
+            - `reinitializations`, tracks the reinitializations
+                of the worst individuals
 
-if __name__ == '__main__':
-    from examples.generated_examples import hard_problem_1, hard_solution_1
+        Returns:
+            dict: A dictionary with keys
+                `generations`, `row_swaps`,
+                `cell_swaps`,
+                `row_reinitializations`,
+                `col_swaps`, `sub_swaps`,
+                `replacements`,
+                `reinitializations`
+        """
+        stats_dict = {
+            'generations': self.generations,
+            'row_swaps': self.row_swaps,
+            'cell_swaps': self.cell_swaps,
+            'row_reinitializations': self.row_reinitializations,
+            'col_swaps': self.col_swaps,
+            'sub_swaps': self.sub_swaps,
+            'replacements': self.replacements,
+            'reinitializations': self.reinitializations
+        }
 
-    LSGA = SudokuLSGA(hard_problem_1)
-    print_sudoku(LSGA.grid)
-    solution, fitness = LSGA.evolve()
-    print('\n Actual Solution: \n')
-    print_sudoku(np.array(hard_solution_1))
-    print('\n Proposed Solution: \n')
-    print_sudoku(np.array(solution))
+        return stats_dict
+
     pass
