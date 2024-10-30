@@ -1,0 +1,81 @@
+site_name: "Sudoku Solver"
+site_description: "Documentation for Sudoku Solver"
+site_author: "Gianmaria Pizzo"
+site_url: "https://github.com/PayThePizzo/SudokuSolver"
+repo_name: "PayThePizzo/SudokuSolver"
+repo_url: "https://github.com/PayThePizzo/SudokuSolver"
+
+# watch: [mkdocs.yml, README.md, src]
+
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
+nav:
+- Home: index.md
+- Getting Started:
+  - Installation: getting_started/installation.md
+  - Configuration: getting_started/configuration.md
+  - Usage: getting_started/usage.md
+- Reference: 
+  - Sudoku Utilities: reference/utils.md
+  - Maintain Arc Consistency Algorithm (CSP): reference/csp.md
+  - Local Search Genetic Algorithm (LSGA): reference/lsga.md
+- Testing:
+  - Unit Tests: 
+    - MAC Tests: testing/tests/mac_tests.md
+    - LSGA Tests: testing/tests/lsga_tests.md
+  - Benchmark Test: testing/benchmarks.md
+- Comparative Analysis: 
+  - MAC vs LSGA: notebooks/sudoku_solvers_analysis.ipynb
+
+theme:
+  name: readthedocs
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - content.code.copy
+
+plugins:
+- autorefs
+- search
+- mkdocs-pdf
+- mkdocs-jupyter:
+    execute: false
+    include_requirejs: true
+- mkdocstrings:
+    enabled: true
+    handlers:
+      python:
+        setup_commands:
+          - import sys
+          - sys.path.append("src")
+        import:
+        - https://docs.python-requests.org/en/master/objects.inv
+        - https://docs.python.org/3/objects.inv
+        - https://mkdocstrings.github.io/objects.inv
+        - https://mkdocstrings.github.io/autorefs/objects.inv
+        - https://mkdocstrings.github.io/griffe/objects.inv
+        - https://python-markdown.github.io/objects.inv
+        paths: [src, tests, .]
+        options:
+          docstring_options:
+            ignore_init_summary: true
+          docstring_style: google
+          docstring_section_style: list
+          heading_level: 2
+          inherited_members: true
+          merge_init_into_class: true
+          parameter_headings: true
+          separate_signature: true
+          show_bases: false
+          show_inheritance_diagram: true
+          show_root_heading: true
+          show_root_full_path: false
+          show_source: true
+          show_signature_annotations: true
+          show_symbol_type_heading: true
+          show_symbol_type_toc: true
+          signature_crossrefs: true
+          summary: true
