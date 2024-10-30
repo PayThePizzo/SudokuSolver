@@ -26,6 +26,11 @@ notebook = "^7.2.2"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
+mkdocstrings = "^0.26.2"
+mkdocstrings-python = "^1.12.2"
+mkdocs-jupyter = "^0.25.1"
+mkdocs-pdf = "^0.1.2"
+pymdown-extensions = "^10.12"
 
 
 [tool.poetry.group.test.dependencies]
@@ -49,8 +54,14 @@ flake8-functions-names = "^0.4.0"
 flake8-variables-names = "^0.0.6"
 flake8-functions = "^0.0.8"
 flake8-docstring-checker = "^1.2"
+black = "^24.10.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[project]
+dependencies = [
+    "mkdocstrings-python",
+]
