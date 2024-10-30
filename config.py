@@ -26,6 +26,7 @@ class Config:
 
     solved = False
 
+    # FIXME: Logging does not separate between classes.
     @staticmethod
     def setup_logging(log_file_path, log_level=logging.INFO):
         """Set up logging configuration for the application.
