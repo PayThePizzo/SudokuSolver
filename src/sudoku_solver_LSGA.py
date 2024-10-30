@@ -94,7 +94,7 @@ class SudokuSolverLSGA(GAConfig):
 
         Args:
             grid (list[list[int]]): An array-like 2D 9x9 list of integers
-            representing the sudoku board puzzle.
+                representing the sudoku board puzzle.
         """
         # Grid length
         self.N = len(grid)
@@ -728,7 +728,7 @@ class SudokuSolverLSGA(GAConfig):
                 of the worst individuals
 
         Returns:
-            dict: A dictionary with keys
+            (dict): A dictionary with keys
                 `generations`, `row_swaps`,
                 `cell_swaps`,
                 `row_reinitializations`,

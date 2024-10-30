@@ -13,7 +13,7 @@ import time
 import pandas as pd
 import numpy as np
 import glob
-from memory_profiler import profile
+# from memory_profiler import profile
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -91,7 +91,7 @@ def benchmark_solver(sample, solver_class, results_path):
     Args:
         sample (pd.DataFrame): DataFrame containing Sudoku puzzles with columns
             'quizzes', 'solutions', 'clue_numbers'.
-        solver_class: The class to benchmark (e.g., SudokuSolverMAC).
+        solver_class (SudokuSolverMAC or SudokuSolverLSGA): The class to benchmark.
         results_path (str): The path where results will be saved.
     """
     results = []
@@ -99,8 +99,12 @@ def benchmark_solver(sample, solver_class, results_path):
     for index, row in sample.iterrows():
         # Prepare clues, puzzle and solution
         clues = int(row['clue_numbers'])
-        puzzle = string_to_sudoku_board(puzzle=row['quizzes'])
-        solution = np.array(string_to_sudoku_board(puzzle=row['solutions']))
+        puzzle = string_to_sudoku_board(
+            puzzle=row['quizzes']
+        )
+        solution = string_to_sudoku_board(
+            puzzle=row['solutions'], to_np_array=True
+        )
 
         # Initialize CPU, RSS, VMS tracking
         cpu_samples = []
@@ -295,21 +299,21 @@ def join_csv_files_with_prefix(directory, prefix, output_path):
 
 if __name__ == '__main__':
     # # +++ Samples by Difficulty +++
-    # Super-Easy
-    benchmark_solvers_random_sample(sample_size=50, min_clues=61, max_clues=80)
-    # Easy
-    benchmark_solvers_random_sample(sample_size=50, min_clues=41, max_clues=60)
-    # Medium
-    benchmark_solvers_random_sample(sample_size=50, min_clues=26, max_clues=40)
-    # Hard
-    benchmark_solvers_random_sample(sample_size=50, min_clues=21, max_clues=25)
-    # Expert
-    benchmark_solvers_random_sample(sample_size=50, min_clues=17, max_clues=20)
+    # # Super-Easy
+    # benchmark_solvers_random_sample(sample_size=50, min_clues=61, max_clues=80)
+    # # Easy
+    # benchmark_solvers_random_sample(sample_size=50, min_clues=41, max_clues=60)
+    # # Medium
+    # benchmark_solvers_random_sample(sample_size=50, min_clues=26, max_clues=40)
+    # # Hard
+    # benchmark_solvers_random_sample(sample_size=50, min_clues=21, max_clues=25)
+    # # Expert
+    # benchmark_solvers_random_sample(sample_size=50, min_clues=17, max_clues=20)
 
-    # # Join result datasets
-    # MAC
-    join_csv_files_with_prefix(resdir, 'csp_rand_', os.path.join(resdir, 'csp_benchmark.csv'))
-    # LSGA
-    join_csv_files_with_prefix(resdir, 'lsga_rand_', os.path.join(resdir, 'lsga_benchmark.csv'))
+    # # # Join result datasets
+    # # MAC
+    # join_csv_files_with_prefix(resdir, 'csp_rand_', os.path.join(resdir, 'csp_benchmark.csv'))
+    # # LSGA
+    # join_csv_files_with_prefix(resdir, 'lsga_rand_', os.path.join(resdir, 'lsga_benchmark.csv'))
 
     pass

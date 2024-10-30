@@ -104,7 +104,7 @@ class SudokuSolverMAC(CSPConfig):
         have an assigned value.
 
         Returns:
-            list: A 9x9 list where each element is a set representing
+            (list): A 9x9 list where each element is a set representing
                 the possible values for the corresponding cell.
 
         Raises:
@@ -203,7 +203,7 @@ class SudokuSolverMAC(CSPConfig):
             col (int): Column index of the cell.
 
         Returns:
-            set: A set of tuples representing the coordinates (row, col) of the
+            (set): A set of tuples representing the coordinates (row, col) of the
                 neighboring cells.
         """
         neighbors = set()
@@ -242,7 +242,7 @@ class SudokuSolverMAC(CSPConfig):
                 second cell (neighbor).
 
         Returns:
-            bool: True if xi's domain was revised (values were removed), False
+            (bool): True if xi's domain was revised (values were removed), False
                 otherwise.
         """
         revised = False
@@ -277,7 +277,7 @@ class SudokuSolverMAC(CSPConfig):
         contradictions remain.
 
         Returns:
-            bool: True if the domains are arc consistent, False if a
+            (bool): True if the domains are arc consistent, False if a
                 contradiction is found (i.e., a cell has an empty domain).
         """
         # Neighbor arcs queue
@@ -319,7 +319,7 @@ class SudokuSolverMAC(CSPConfig):
         which is the cell most likely to cause a constraint violation.
 
         Returns:
-            tuple: A tuple (row, col) representing the most constrained cell's
+            (tuple): A tuple (row, col) representing the most constrained cell's
                 coordinates, or (None, None) if no empty cells remain.
         """
         # Max possibilities
@@ -354,7 +354,7 @@ class SudokuSolverMAC(CSPConfig):
             col (int): Column index of the cell.
 
         Returns:
-            list: A sorted list of integers (possible values) for the cell.
+            (list): A sorted list of integers (possible values) for the cell.
         """
         # Finds count for value
         def count_restrictions(value):
@@ -378,7 +378,7 @@ class SudokuSolverMAC(CSPConfig):
         MRV and LCV heuristics to guide the search.
 
         Returns:
-            bool: True if the puzzle is solved, False if no solution exists.
+            (bool): True if the puzzle is solved, False if no solution exists.
         """
         # Track calls
         self.recursive_calls += 1
@@ -446,7 +446,7 @@ class SudokuSolverMAC(CSPConfig):
                 the next cell.
 
         Returns:
-            dict: A dictionary with keys
+            (dict): A dictionary with keys
                 `recursive_calls`, `backtracking_steps`,
                 `forward_steps`, `ac3_revisions`,
                 `ac3_contradictions` and `mrv_invocations`
